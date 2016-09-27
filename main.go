@@ -12,7 +12,15 @@ const (
 	GO = "go"
 )
 
+var (
+	pkg = ""
+)
+
 func main() {
+	if len(os.Args) > 1 {
+		pkg = os.Args[1]
+	}
+
 	before, beforeClose, err := Tempfile()
 	if err != nil {
 		panic(err)
@@ -69,7 +77,10 @@ func Tempfile() (*os.File, func(), error) {
 }
 
 func ExecBench(w io.Writer, opts ...string) error {
-	o := append([]string{"test", "-run=NONE", "-bench=.", "-benchmem"}, opts...)
+	o := append([]string{"test", "-run=NONE", "-bench=.", "-cpu=1,4,8,16", "-benchmem"}, opts...)
+	if pkg != "" {
+		o = append(o, pkg)
+	}
 	out, err := exec.Command(GO, o...).Output()
 	if err != nil {
 		return err
